@@ -4,4 +4,4 @@ MANIFEST
 test.pl
 PopEntry.pm
 README
-Readme.html
+Tk::PopEntry

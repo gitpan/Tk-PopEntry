@@ -8,3 +8,10 @@ Revision history for Perl extension Tk-PopEntry-0.02.
         - corrected error with '-nospace' option
         - Makefile.PL corrected
         - test.pl modified
+
+0.03  Fri Dec 22 09:00:00 2000
+        - eliminated ugly error messages when using a hotkey
+          while the menu isn't actually visible.
+        - changed "Select All" to "Sel. All" to make the menu
+          line up and look pretty.        
+        - changed the README file.

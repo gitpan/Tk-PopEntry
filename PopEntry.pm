@@ -1,6 +1,6 @@
 package Tk::PopEntry;
 
-$VERSION = '.01';
+$VERSION = '.03';
 
 require Tk::Entry;
 
@@ -20,7 +20,7 @@ sub Populate{
          ["Copy",'Tk::PopEntry::copyToClip','<Control-c>',0],
          ["Paste",'Tk::PopEntry::pasteFromClip','<Control-v>',0],
          ["Delete",'Tk::PopEntry::deleteSelected','<Control-d>',0],
-         ["Select All",'Tk::PopEntry::selectAll','<Control-a>',7],
+         ["Sel. All",'Tk::PopEntry::selectAll','<Control-a>',7],
       ];
    }
 
@@ -183,7 +183,7 @@ sub popupMenu{
       $callback = $item->[1];
       $binding  = $item->[2];
       $index    = $item->[3];     
-      if($string eq "Select All"){
+      if($string =~ /Sel.*?.All/i){
          $dw->{mb_Select} = $popupMenu->Button(
             -text       => "$string\t$binding",
             -underline  => $index,
@@ -203,7 +203,7 @@ sub popupMenu{
    # Pack the buttons and perform common configurations
    foreach my $temp(@$ref){
       my $button;
-      if($temp->[0] eq "Select All"){ $button = $dw->{mb_Select} }
+      if($temp->[0] =~ /Sel.*?.All/i){ $button = $dw->{mb_Select} }
       else{ $button = $dw->{"mb_$temp->[0]"} }
       $button->configure(-relief=>'flat', -padx=>0, -pady=>0, -anchor=>'w');
       $button->pack(-expand=>1, -fill=>'x');
@@ -241,13 +241,17 @@ sub setState{
 
    my $ref = $dw->cget(-menuitems);
 
-   # Set the default menu items to 'disabled', enabling them if appropriate
+   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Set the default menu items to 'disabled', enabling them if appropriate.
+   # The eval's are necessary to avoid ugly error messages if the user uses
+   # a hotkey without the menu actually displayed.
+   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    foreach my $item(@$ref){
       if($item->[0] =~ /Cut|Copy|Paste|Delete/){
-         $dw->{"mb_$item->[0]"}->configure(-state=>'disabled');
+         eval{$dw->{"mb_$item->[0]"}->configure(-state=>'disabled')};
       }
-      if($item->[0] =~ /Select All/){
-         $dw->{mb_Select}->configure(-state=>'disabled');
+      if($item->[0] =~ /Sel.*?.All/i){
+         eval{$dw->{mb_Select}->configure(-state=>'disabled')};
       }
    }
 
@@ -256,19 +260,19 @@ sub setState{
    # not empty or selection is present.
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    if(($clipboard) && ($dw->{mb_Paste})){
-      $dw->{mb_Paste}->configure(-state=>'normal');
+      eval{$dw->{mb_Paste}->configure(-state=>'normal')};
    }
    if(($selection) && ($dw->{mb_Cut})){
-      $dw->{mb_Cut}->configure(-state=>'normal');
+      eval{$dw->{mb_Cut}->configure(-state=>'normal')};
    }
    if(($selection) && ($dw->{mb_Copy})){
-      $dw->{mb_Copy}->configure(-state=>'normal');
+      eval{$dw->{mb_Copy}->configure(-state=>'normal')};
    }
    if(($selection) && ($dw->{mb_Delete})){
-      $dw->{mb_Delete}->configure(-state=>'normal');
+      eval{$dw->{mb_Delete}->configure(-state=>'normal')};
    }
    if(($entry) && ($dw->{mb_Select})){
-      $dw->{mb_Select}->configure(-state=>'normal');
+      eval{$dw->{mb_Select}->configure(-state=>'normal')};
    }
 
 } #END setState()
@@ -317,7 +321,7 @@ sub moveToClip{
 sub deleteSelected{
     my $dw = shift;
     my $deleted_string;
-
+ 
     if($dw->selectionPresent){
       my $from = $dw->index('sel.first');
 	   my $to = $dw->index('sel.last');

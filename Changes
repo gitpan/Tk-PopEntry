@@ -35,3 +35,11 @@ Revision history for Perl extension Tk-PopEntry-0.04.
         - Toplevel control made better with judicious use of 
           'ismapped()'.
         - Pod fixed (hopefully) and updated.
+
+0.06  Fri Apr 12 23:25:01 2002
+        - Fixed issue where cursor did not scroll to right if
+          text inserted exceeded with of the Entry widget.  Thanks
+	  to Amable Ventura Miguel Angel for the spot.
+
+	- Fixed some 'uninitialized' warnings that started
+	  showing up in Perl 5.6.

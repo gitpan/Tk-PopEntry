@@ -5,7 +5,7 @@ require Tk::Entry;
 
 use vars qw(@ISA $VERSION);
 @ISA = qw(Tk::Derived Tk::Entry);
-$VERSION = 0.05;
+$VERSION = 0.06;
 
 Construct Tk::Widget 'PopEntry';
 
@@ -97,9 +97,10 @@ sub setBindings{
 sub validate{
    my $dw = shift;
 
-   my $pattern = $dw->cget(-pattern);
-   my $nospace = $dw->cget(-nospace);
+   my $pattern  = $dw->cget(-pattern);
+   my $nospace  = $dw->cget(-nospace);
    my $maxwidth = $dw->cget(-maxwidth);
+   my $case     = $dw->cget(-case);
    
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # If the user specifies -maxvalue, take their word for it that they will
@@ -125,40 +126,41 @@ sub validate{
    }
    
    # Change all characters to uppercase or lowercase if appropriate
-   if($dw->cget(-case) eq "upper"){ $string =~ tr/a-z/A-Z/ }
-   if($dw->cget(-case) eq "lower"){ $string =~ tr/A-Z/a-z/ }
+   if($case && $case eq "upper"){ $string =~ tr/a-z/A-Z/ }
+   if($case && $case eq "lower"){ $string =~ tr/A-Z/a-z/ }
    
-   if($pattern =~ /^unsigned_int.*?$/i){
-      if($nospace){ $pattern = '^\d*$' }
-      else{ $pattern = '^(\s*\d*\s*)*$' }
-   }  
-   elsif($pattern =~ /^signed_int.*?$/i){
-      if($nospace){ $pattern = '^[\+\-]?\d*$' }
-      else{ $pattern = '^(\s*[\+\-]?\d*\s*)*$' }
+   if($pattern){
+      if($pattern =~ /^unsigned_int.*?$/i){
+         if($nospace){ $pattern = '^\d*$' }
+         else{ $pattern = '^(\s*\d*\s*)*$' }
+      }  
+      elsif($pattern =~ /^signed_int.*?$/i){
+         if($nospace){ $pattern = '^[\+\-]?\d*$' }
+         else{ $pattern = '^(\s*[\+\-]?\d*\s*)*$' }
+      }
+      elsif($pattern =~ /^float.*?$/i){
+         if($nospace){ $pattern = '^-?\d*\.?\d*$' }
+         else{ $pattern = '^\s*?-?\d*\.?\d*\s*$' }
+      }
+      elsif($pattern =~ /^alphanum.*?$/i){
+         if($nospace){ $pattern = '^[A-Za-z0-9]*$' }
+         else{ $pattern = '^(\s*?[A-Za-z0-9]*?\s*)*$' }
+      }
+      elsif($pattern =~ /^alpha.*?$/i){
+         if($nospace){ $pattern = '^[A-Za-z]*$' }
+         else{ $pattern = '^(\s*[A-Za-z]*\s*)*$' }
+      }
+      elsif($pattern =~ /^capsonly.*?$/i){
+         if($nospace){ $pattern = '^[A-Z]*$' }
+         else{ $pattern = '^(\s*[A-Z]*\s*)*$' }
+      }
+      elsif($pattern =~ /^nondigit.*?$/i){
+         if($nospace){ $pattern = '^\D*$' }
+         else{ $pattern = '^(\s*\D*\s*)*$' }
+      }
+      # Check for a user-defined pattern
+      else{} # do nothing
    }
-   elsif($pattern =~ /^float.*?$/i){
-      if($nospace){ $pattern = '^-?\d*\.?\d*$' }
-      else{ $pattern = '^\s*?-?\d*\.?\d*\s*$' }
-   }
-   elsif($pattern =~ /^alphanum.*?$/i){
-      if($nospace){ $pattern = '^[A-Za-z0-9]*$' }
-      else{ $pattern = '^(\s*?[A-Za-z0-9]*?\s*)*$' }
-   }
-   elsif($pattern =~ /^alpha.*?$/i){
-      if($nospace){ $pattern = '^[A-Za-z]*$' }
-      else{ $pattern = '^(\s*[A-Za-z]*\s*)*$' }
-   }
-   elsif($pattern =~ /^capsonly.*?$/i){
-      if($nospace){ $pattern = '^[A-Z]*$' }
-      else{ $pattern = '^(\s*[A-Z]*\s*)*$' }
-   }
-   elsif($pattern =~ /^nondigit.*?$/i){
-      if($nospace){ $pattern = '^\D*$' }
-      else{ $pattern = '^(\s*\D*\s*)*$' }
-   }
-   # Check for a user-defined pattern
-   elsif($dw->cget(-pattern)){ $pattern = $dw->cget(-pattern) }
-   else{} # do nothing
    
    #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # If the string entered by the user doesn't match the pattern, replace 
@@ -194,6 +196,7 @@ sub validate{
    # If the validation rule is obeyed, insert the new string.
    $dw->delete(0,'end');
    $dw->insert('end',$string);
+   $dw->xview($dw->index('insert')); # Scroll to right as needed
 }
 
 # Restore the original string if a validation check fails.
@@ -217,7 +220,7 @@ sub displayMenu{
 
    my($button,$string,$callback,$index,$binding);
    
-   if($dw->cget(-nomenu) != 0){ return }
+   if($dw->cget(-nomenu)){ return }
    
    my $menu = $dw->cget(-menu);
    my $menuitems = $dw->cget(-menuitems);

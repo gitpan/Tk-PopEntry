@@ -1,6 +1,6 @@
 package Tk::PopEntry;
 
-$VERSION = '.03';
+$VERSION = '.04';
 
 require Tk::Entry;
 
@@ -30,9 +30,9 @@ sub Populate{
       -maxwidth   => ['PASSIVE'],
       -maxvalue   => ['PASSIVE'],
       -minvalue   => ['PASSIVE'],
-      -nospace    => ['PASSIVE', undef, undef, 0],
       -nomenu     => ['PASSIVE'],
-      -menuitems  => ['PASSIVE',undef,undef,$menuitems],
+      -nospace    => ['PASSIVE', undef, undef, 0],
+      -menuitems  => ['PASSIVE', undef, undef, $menuitems],
       DEFAULT     => [$dw],
    );
 
@@ -198,6 +198,9 @@ sub popupMenu{
          );
       }
       $dw->bind($binding, \$callback);
+      #print "\nButton is: ", $dw->{"mb_$string"} if($string =~ /exit/i);
+		#$dw->bind('<Control-g>', main::exitApp);
+      #print "\nBinding is: ", $binding;
    }
 
    # Pack the buttons and perform common configurations
@@ -353,6 +356,98 @@ sub popDown{
       $dw->grabRelease;
    }
 }#END popDown()
+
+
+sub addItem{
+	my($dw, $index, $item) = @_;
+
+   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	# Permit the programmer to omit an index, in which case the item will be
+   # added to the end of the menu.
+   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   if(ref($index) =~ /array/i){
+		$item = $index;
+		$index = 'end';
+	}
+
+	my $menu = $dw->cget(-menu);
+   my $menuitems = $dw->cget(-menuitems);
+
+   my $itemName = $item->[0];
+   my $callback = $item->[1];
+   my $binding  = $item->[2];
+   
+	my $length = scalar(@$menuitems);
+
+   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # If an index is not supplied, the index 'end' is supplied, or the index
+   # supplied is greater than the number of elements, just push the item 
+   # onto the end of the menuitem array.
+   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   if( ($index eq 'end') || ($index > $length) ){ push(@$menuitems, $item) }
+
+   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # If the index *is* specified, use a temporary array to hold the removed
+   # elements using splice, insert the item, then push the temporary array
+   # back onto the original array.
+   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   else{
+		for(my $n = 0; $n < $length + 1; $n++){
+			if($index == $n){
+				my @temp = splice @$menuitems, $n;
+				@$menuitems[$n] = $item;
+				push(@$menuitems, @temp);
+			}
+		}
+	}	
+
+   # Bind the item to the callback
+   $dw->bind($binding, \$callback);
+ 
+}#END addItem()
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Delete an item from the menu based on the index or index ranged passed to
+# the method.  The string 'end' may also be use as a valid index.
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+sub deleteItem{
+	my($dw,$index,$last) = @_;
+   
+   # Make sure an index is supplied
+	if($index eq ""){ die "\nNo index supplied to 'deleteItem' method" }
+
+   my $menuitems = $dw->cget(-menuitems);
+   my $length = scalar(@$menuitems);
+
+   # If a range of (0,'end') is detected, just configure the -nomenu option
+   if( ($index == 0) && (($last eq 'end') || ($last > $length) )){
+		$dw->configure(-nomenu=>1);
+		return;
+   }
+
+   if($index eq 'end'){ $index = $length -1 }
+	if($last eq 'end'){ $last = $length }
+
+   # Ensure that the first index is less than the second
+   if( (defined $last) && ($last < $index) ){
+		die "\nThe second index must be greater than the first in 'deleteItem'";
+   }
+
+   my $numItems = $last - $index;
+
+   # Remove a single item or group of items, as appropriate
+   for(my $n = 0; $n < $length; $n++){
+		if(($index == $n) && ($last eq "")){
+			my $spliced = splice @$menuitems, $n, 1;
+			return $spliced;
+		}
+		if(($index == $n) && ($last ne "")){
+			my $spliced = splice @$menuitems, $n, $numItems;
+			return \@spliced;
+ 		}
+	}
+}#END deleteItem()
+	
 1;
 __END__
 =head1 PopupEntry

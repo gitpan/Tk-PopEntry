@@ -1,4 +1,4 @@
-Revision history for Perl extension Tk-PopEntry-0.02.
+Revision history for Perl extension Tk-PopEntry-0.04.
 
 0.01  Tue Sep 26 07:49:58 2000
 	- original version; created by h2xs 1.20 with options
@@ -15,3 +15,6 @@ Revision history for Perl extension Tk-PopEntry-0.02.
         - changed "Select All" to "Sel. All" to make the menu
           line up and look pretty.        
         - changed the README file.
+
+0.04  Thu Dec 28 08:00:00 2000
+        - Added methods 'addItem' and 'deleteItem'.

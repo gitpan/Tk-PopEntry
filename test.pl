@@ -12,4 +12,8 @@ $label->pack;
 $exitbutton = $mw->Button(-text=>"Exit", -command=>sub{exit});
 $exitbutton->pack;
 
+$pe->addItem(["Exit", 'main::exitApp', '<Control-g>', 1]);
+
 MainLoop;
+
+sub exitApp{ exit }

@@ -47,7 +47,7 @@ sub insert{
 
    # Check for whitespace
    if($dw->cget(-nospace) == 1){
-      if($str =~ /^\*$/){
+      if($str =~ /^\s*$/){
          $dw->bell;
          return;
       }

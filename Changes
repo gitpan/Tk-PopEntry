@@ -1,0 +1,6 @@
+Revision history for Perl extension Tk-PopupEntry-0.01.
+
+0.01  Tue Sep 26 07:49:58 2000
+	- original version; created by h2xs 1.20 with options
+		-A -X -n Tk-PopupEntry-0.01
+
